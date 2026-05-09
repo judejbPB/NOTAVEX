@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NotaMail — Démo Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  * { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+
+  @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
+  @keyframes fadeUp  { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes slideIn { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes spin    { to{transform:rotate(360deg)} }
+  @keyframes bounce  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  @keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  @keyframes growBar { from{height:0} to{height:var(--h)} }
+  @keyframes countUp { from{opacity:0} to{opacity:1} }
+  @keyframes ping    { 0%{transform:scale(1);opacity:.6} 100%{transform:scale(1.5);opacity:0} }
+  @keyframes progress { from{width:0%} to{width:100%} }
+
+  .fade-in  { animation: fadeIn  .4s ease forwards; }
+  .fade-up  { animation: fadeUp  .5s ease forwards; }
+  .slide-in { animation: slideIn .35s ease forwards; opacity:0; }
+
+  .dot-bounce { animation: bounce .7s ease infinite; }
+  .pulse-dot  { animation: pulse 1.5s ease infinite; }
+  .spin-icon  { animation: spin 1s linear infinite; }
+  .ping-ring  { animation: ping 1.6s ease infinite; }
+
+  .nav-btn { background:transparent; border:none; cursor:pointer; width:100%; text-align:left; }
+  .nav-btn.active { background:rgba(255,255,255,0.15); }
+  .nav-btn:hover:not(.active) { background:rgba(255,255,255,0.08); }
+
+  .email-row { cursor:pointer; border-bottom:1px solid #f1f5f9; transition:background .15s; border-left:2px solid transparent; }
+  .email-row:hover { background:#f8fafc; }
+  .email-row.selected { background:#eff6ff; border-left-color:#2E75B6; }
+
+  .send-btn { transition:background .2s; }
+  .send-btn:hover { background:#2E75B6 !important; }
+  .send-btn.sent { background:#059669 !important; cursor:default; }
+
+  ::-webkit-scrollbar { width:5px; }
+  ::-webkit-scrollbar-track { background:#f8fafc; }
+  ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:3px; }
+
+  .progress-bar { animation: progress 2.1s ease-in-out forwards; }
+</style>
+</head>
+<body style="display:flex;flex-direction:column;height:100vh;background:#f8fafc">
+
+<!-- TOP BAR -->
+<header style="height:56px;background:white;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;flex-shrink:0;z-index:10">
+  <div style="display:flex;align-items:center;gap:.625rem;font-size:.875rem">
+    <a href="index.html" style="display:flex;align-items:center;gap:.375rem;color:#94a3b8;text-decoration:none;font-weight:500" onmouseover="this.style.color='#1B3A5C'" onmouseout="this.style.color='#94a3b8'">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Retour
+    </a>
+    <svg width="16" height="16" fill="none" stroke="#cbd5e1" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+    <svg width="16" height="16" fill="none" stroke="#2E75B6" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+    <span style="font-weight:600;color:#1B3A5C">Bureau Notarial Tremblay</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:.75rem">
+    <span style="display:inline-flex;align-items:center;gap:.375rem;background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:.65rem;font-weight:700;padding:.3rem .75rem;border-radius:9999px;text-transform:uppercase;letter-spacing:.05em">
+      <span class="pulse-dot" style="width:6px;height:6px;border-radius:50%;background:#f59e0b;display:inline-block"></span>
+      Mode démo
+    </span>
+    <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1B3A5C,#2E75B6);display:flex;align-items:center;justify-content:center;color:white;font-size:.7rem;font-weight:700">JT</div>
+  </div>
+</header>
+
+<!-- BODY -->
+<div style="display:flex;flex:1;overflow:hidden">
+
+  <!-- SIDEBAR -->
+  <aside style="width:220px;flex-shrink:0;background:#1B3A5C;display:flex;flex-direction:column">
+    <div style="padding:1.25rem;border-bottom:1px solid rgba(255,255,255,0.1)">
+      <div style="display:flex;align-items:center;gap:.625rem">
+        <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#60a5fa,#2E75B6);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="16" height="16" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        </div>
+        <div>
+          <div style="color:white;font-weight:700;font-size:.875rem">NotaMail</div>
+          <div style="color:rgba(147,197,253,0.7);font-size:.65rem">par Notavex</div>
+        </div>
+      </div>
+    </div>
+
+    <nav style="flex:1;padding:.75rem">
+      <button class="nav-btn" id="nav-dashboard" onclick="showView('dashboard')" style="display:flex;align-items:center;justify-content:space-between;padding:.625rem .75rem;border-radius:.75rem;color:rgba(191,219,254,0.8);font-size:.875rem;font-weight:500;margin-bottom:2px">
+        <span style="display:flex;align-items:center;gap:.625rem">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/></svg>
+          Tableau de bord
+        </span>
+      </button>
+      <button class="nav-btn active" id="nav-inbox" onclick="showView('inbox')" style="display:flex;align-items:center;justify-content:space-between;padding:.625rem .75rem;border-radius:.75rem;color:white;font-size:.875rem;font-weight:500">
+        <span style="display:flex;align-items:center;gap:.625rem">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+          Boîte de réception
+        </span>
+        <span style="background:#2E75B6;color:white;font-size:.65rem;font-weight:700;padding:.15rem .4rem;border-radius:9999px">4</span>
+      </button>
+    </nav>
+
+    <div style="padding:.875rem 1rem;border-top:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;gap:.625rem">
+      <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#60a5fa,#2E75B6);display:flex;align-items:center;justify-content:center;color:white;font-size:.65rem;font-weight:700;flex-shrink:0">JT</div>
+      <div>
+        <div style="color:white;font-size:.75rem;font-weight:600">Me J.-F. Tremblay</div>
+        <div style="color:rgba(147,197,253,0.6);font-size:.65rem">Notaire</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+
+    <!-- DASHBOARD VIEW -->
+    <div id="view-dashboard" style="display:none;flex:1;overflow-y:auto;padding:1.5rem;gap:1.25rem;flex-direction:column">
+      <div>
+        <h1 style="font-size:1.25rem;font-weight:700;color:#1B3A5C">Tableau de bord</h1>
+        <p style="color:#64748b;font-size:.875rem;margin-top:.25rem">Bonjour, Me Tremblay — voici votre résumé du jour.</p>
+      </div>
+
+      <!-- STAT CARDS -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem">
+        <div class="fade-up" style="background:white;border:1px solid #f1f5f9;border-radius:1rem;padding:1.5rem;animation-delay:.1s">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+            <span style="color:#64748b;font-size:.8rem;font-weight:500">aujourd'hui</span>
+            <div style="width:36px;height:36px;border-radius:.75rem;background:rgba(27,58,92,0.08);display:flex;align-items:center;justify-content:center">
+              <svg width="18" height="18" fill="none" stroke="#2E75B6" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            </div>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:.5rem;margin-bottom:.5rem">
+            <span id="count-emails" style="font-size:2.5rem;font-weight:800;color:#1B3A5C;line-height:1">0</span>
+            <span style="color:#64748b;font-size:.875rem;font-weight:500">courriels traités</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:.375rem;color:#059669;font-size:.75rem;font-weight:600">
+            <span style="width:6px;height:6px;border-radius:50%;background:#34d399;display:inline-block"></span>
+            +12% vs hier
+          </div>
+        </div>
+
+        <div class="fade-up" style="background:white;border:1px solid #f1f5f9;border-radius:1rem;padding:1.5rem;animation-delay:.22s">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+            <span style="color:#64748b;font-size:.8rem;font-weight:500">économisées</span>
+            <div style="width:36px;height:36px;border-radius:.75rem;background:rgba(27,58,92,0.08);display:flex;align-items:center;justify-content:center">
+              <svg width="18" height="18" fill="none" stroke="#2E75B6" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"/></svg>
+            </div>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:.5rem;margin-bottom:.5rem">
+            <span style="font-size:2.5rem;font-weight:800;color:#1B3A5C;line-height:1" id="count-time">0h</span>
+            <span style="color:#64748b;font-size:.875rem;font-weight:500">ce mois</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:.375rem;color:#059669;font-size:.75rem;font-weight:600">
+            <span style="width:6px;height:6px;border-radius:50%;background:#34d399;display:inline-block"></span>
+            Économie estimée
+          </div>
+        </div>
+
+        <div class="fade-up" style="background:white;border:1px solid #f1f5f9;border-radius:1rem;padding:1.5rem;animation-delay:.34s">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+            <span style="color:#64748b;font-size:.8rem;font-weight:500">taux</span>
+            <div style="width:36px;height:36px;border-radius:.75rem;background:rgba(27,58,92,0.08);display:flex;align-items:center;justify-content:center">
+              <svg width="18" height="18" fill="none" stroke="#2E75B6" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </div>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:.5rem;margin-bottom:.5rem">
+            <span id="count-rate" style="font-size:2.5rem;font-weight:800;color:#1B3A5C;line-height:1">0</span>
+            <span style="color:#64748b;font-size:.875rem;font-weight:500">% automatique</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:.375rem;color:#059669;font-size:.75rem;font-weight:600">
+            <span style="width:6px;height:6px;border-radius:50%;background:#34d399;display:inline-block"></span>
+            +3% ce mois
+          </div>
+        </div>
+      </div>
+
+      <!-- CHARTS ROW -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <!-- Bar chart -->
+        <div class="fade-up" style="background:white;border:1px solid #f1f5f9;border-radius:1rem;padding:1.5rem;animation-delay:.46s">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+            <div>
+              <h3 style="font-weight:700;color:#1B3A5C;font-size:.875rem">Activité hebdomadaire</h3>
+              <p style="color:#94a3b8;font-size:.75rem;margin-top:.1rem">Courriels traités par jour</p>
+            </div>
+            <span style="display:flex;align-items:center;gap:.25rem;background:#eff6ff;border:1px solid #dbeafe;color:#2E75B6;font-size:.7rem;font-weight:700;padding:.25rem .625rem;border-radius:9999px">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+              +18%
+            </span>
+          </div>
+          <div id="bar-chart" style="display:flex;align-items:flex-end;gap:.75rem;height:100px"></div>
+        </div>
+
+        <!-- Activity -->
+        <div class="fade-up" style="background:white;border:1px solid #f1f5f9;border-radius:1rem;padding:1.5rem;animation-delay:.58s">
+          <h3 style="font-weight:700;color:#1B3A5C;font-size:.875rem;margin-bottom:1rem">Activité récente</h3>
+          <div id="activity-list" style="display:flex;flex-direction:column;gap:.75rem"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INBOX VIEW -->
+    <div id="view-inbox" style="display:flex;flex:1;overflow:hidden">
+
+      <!-- EMAIL LIST -->
+      <div style="width:300px;flex-shrink:0;background:white;border-right:1px solid #f1f5f9;display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:.75rem 1rem;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+          <div>
+            <h2 style="font-weight:700;color:#1B3A5C;font-size:.875rem">Boîte de réception</h2>
+            <p style="color:#94a3b8;font-size:.7rem;margin-top:.1rem">4 non lus</p>
+          </div>
+          <span style="background:#1B3A5C;color:white;font-size:.65rem;font-weight:700;padding:.15rem .5rem;border-radius:9999px">10</span>
+        </div>
+        <div id="email-list" style="flex:1;overflow-y:auto"></div>
+      </div>
+
+      <!-- EMAIL DETAIL -->
+      <div id="email-detail" style="flex:1;background:white;display:flex;flex-direction:column;overflow:hidden"></div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+const EMAILS = [
+  {
+    id:1, from:"Marie-Claire Tremblay", email:"mc.tremblay@gmail.com",
+    subject:"Documents pour achat maison Laval?",
+    time:"Il y a 8 min", tag:"Immobilier", tagColor:"#1d4ed8", tagBg:"#eff6ff", tagBorder:"#dbeafe",
+    unread:true, priority:"high",
+    body:`Bonjour Maître,
+
+J'achète une maison unifamiliale au 245, boulevard des Laurentides à Laval pour 585 000 $. La Banque Nationale a approuvé mon prêt et la prise de possession est prévue pour le 15 juin 2025.
+
+C'est mon premier achat immobilier. Pourriez-vous m'indiquer quels documents je dois vous fournir avant la signature de l'acte notarié?
+
+Merci beaucoup,
+Marie-Claire Tremblay
+438-555-0182`,
+    response:`Bonjour Madame Tremblay,
+
+Merci pour votre courriel et félicitations pour votre premier achat immobilier!
+
+Pour la préparation de votre acte, veuillez nous faire parvenir les documents suivants au moins 5 jours ouvrables avant la signature :
+
+DOCUMENTS PERSONNELS
+• Pièce d'identité gouvernementale valide (permis ou passeport)
+• Numéro d'assurance sociale (NAS)
+• Preuve d'adresse actuelle
+
+DOCUMENTS FINANCIERS
+• Lettre d'engagement hypothécaire finale — Banque Nationale
+• Preuve de mise de fonds (relevé bancaire, 90 derniers jours)
+• Preuve d'assurance habitation en vigueur au 15 juin 2025
+
+DOCUMENTS RELATIFS À LA PROPRIÉTÉ
+• Contrat de vente / promesse d'achat signée
+• Certificat de localisation (fourni par le vendeur)
+
+Nous vous contacterons sous peu pour confirmer la date de signature.
+
+Cordialement,
+Bureau Notarial Tremblay
+Me Jean-François Tremblay, notaire`
+  },
+  {
+    id:2, from:"Robert Lavoie", email:"r.lavoie@hotmail.com",
+    subject:"Rendez-vous testament — urgent",
+    time:"Il y a 42 min", tag:"Testament", tagColor:"#7e22ce", tagBg:"#faf5ff", tagBorder:"#e9d5ff",
+    unread:true, priority:"high",
+    body:`Bonjour Maître Tremblay,
+
+Je suis un ancien client (succession Lavoie, 2019). J'ai 67 ans et ma situation familiale a changé — j'ai maintenant trois petits-enfants. Je veux mettre à jour mon testament.
+
+Je suis disponible en après-midi du lundi au jeudi.
+
+Merci,
+Robert Lavoie
+514-555-0247`,
+    response:`Bonjour Monsieur Lavoie,
+
+Nous sommes heureux de vous accueillir à nouveau au Bureau Notarial Tremblay.
+
+Voici nos disponibilités pour votre mise à jour testamentaire :
+
+• Mardi 6 mai, 14h00
+• Mercredi 7 mai, 15h30
+• Jeudi 8 mai, 13h30
+
+La consultation dure environ 60 à 90 minutes. Les honoraires débutent à 350 $.
+
+DOCUMENTS À APPORTER
+• Pièce d'identité valide
+• Copie de votre testament actuel
+• Noms, dates de naissance et adresses de vos bénéficiaires
+• Nom de votre liquidateur testamentaire
+
+Confirmez votre préférence par retour de courriel ou au 514 555-0100.
+
+Cordialement,
+Bureau Notarial Tremblay`
+  },
+  {
+    id:3, from:"Agence Immobilière Dufresne", email:"dossiers@agencedufresne.com",
+    subject:"Statut dossier vente — 85 rue des Érables",
+    time:"Il y a 1h", tag:"Immobilier", tagColor:"#1d4ed8", tagBg:"#eff6ff", tagBorder:"#dbeafe",
+    unread:true, priority:"high",
+    body:`Bonjour Bureau Notarial Tremblay,
+
+Nous représentons les vendeurs du 85, rue des Érables à Longueuil (dossier #2025-0412). La transaction devait être complétée le 30 avril et nos clients sont anxieux.
+
+Y a-t-il des documents manquants ou des problèmes de titre?
+
+Cordialement,
+Sophie Arsenault — Agence Dufresne`,
+    response:`Bonjour Madame Arsenault,
+
+Voici le statut actuel du dossier #2025-0412 :
+
+✓ Acte de vente préparé et validé
+✓ Recherche de titres complétée — aucun problème
+⚠ En attente : radiation de l'hypothèque — Banque Scotia
+
+Nous avons contacté la Banque Scotia ce matin. La quittance sera disponible sous 2 à 3 jours ouvrables.
+
+Date de signature proposée : 8 ou 9 mai 2025
+
+Nous vous contacterons dès confirmation.
+
+Cordialement,
+Bureau Notarial Tremblay`
+  },
+  {
+    id:4, from:"Lucie Bergeron-Côté", email:"lucie.bergeron@videotron.ca",
+    subject:"Mandat de protection pour ma mère",
+    time:"Il y a 2h", tag:"Mandat", tagColor:"#0f766e", tagBg:"#f0fdfa", tagBorder:"#99f6e4",
+    unread:true, priority:"normal",
+    body:`Bonjour,
+
+Ma mère, Monique Côté, 78 ans, veut rédiger un mandat de protection. Elle souhaite me nommer pour ses biens et ma sœur pour sa personne. Est-ce possible d'avoir deux mandataires distincts?
+
+Quels sont vos honoraires?
+
+Lucie Bergeron-Côté
+450-555-0391`,
+    response:`Bonjour Madame Bergeron-Côté,
+
+Oui, il est tout à fait possible — et même recommandé — de nommer deux mandataires distincts : un pour les biens et un pour la personne.
+
+DOCUMENTS REQUIS
+• Pièce d'identité de Madame Côté
+• Noms, adresses et dates de naissance des deux mandataires
+• Nom d'un mandataire substitut
+
+Honoraires : à partir de 395 $ (taxes incluses)
+
+Le mandat entre en vigueur uniquement si votre mère est déclarée inapte par un tribunal. Je vous suggère de prendre rendez-vous rapidement, car la signature requiert la présence de votre mère.
+
+Cordialement,
+Bureau Notarial Tremblay`
+  },
+  {
+    id:5, from:"Émilie Fortin-Lessard", email:"emilie.fortin@gmail.com",
+    subject:"Décès de mon père — ouvrir succession",
+    time:"Il y a 3h", tag:"Succession", tagColor:"#92400e", tagBg:"#fffbeb", tagBorder:"#fde68a",
+    unread:false, priority:"high",
+    body:`Bonjour,
+
+Mon père, Jean-Paul Fortin, est décédé le 22 avril 2025 à l'Hôpital du Sacré-Cœur. Il avait 81 ans et avait rédigé son testament notarié chez vous en 2021. Je suis sa fille unique et liquidatrice.
+
+Par où commencer?
+
+Émilie Fortin-Lessard
+514-555-0628`,
+    response:`Bonjour Madame Fortin-Lessard,
+
+Nous vous offrons nos sincères condoléances pour le décès de votre père.
+
+Nous confirmons que le testament de Monsieur Jean-Paul Fortin est conservé dans nos archives.
+
+PREMIÈRES DÉMARCHES (dans les 30 jours)
+1. Obtenir 5 à 10 certificats de décès (etatcivil.gouv.qc.ca)
+2. Aviser les institutions financières
+3. Vérifier les polices d'assurance-vie
+
+DOCUMENTS À APPORTER LORS DE VOTRE RENDEZ-VOUS
+• Certificat de décès
+• Votre pièce d'identité
+• Liste des actifs connus (immeubles, comptes, placements)
+
+Vous avez le temps — il n'existe pas de délai strict pour terminer une liquidation successorale. Nous sommes là pour vous guider à chaque étape.
+
+Cordialement,
+Bureau Notarial Tremblay`
+  },
+  {
+    id:6, from:"Hassan Benali", email:"h.benali@businessqc.com",
+    subject:"Convention entre actionnaires — nouvelle société",
+    time:"Il y a 4h", tag:"Contrat", tagColor:"#c2410c", tagBg:"#fff7ed", tagBorder:"#fed7aa",
+    unread:false, priority:"normal",
+    body:`Bonjour Maître Tremblay,
+
+Mon associé et moi avons incorporé Benali & Pelletier Conseils Inc. (fédéral, 50/50). Nous voulons une convention d'actionnaires avec clauses de premier refus, rachat en cas de décès et restrictions de transfert.
+
+Quels sont vos délais et honoraires?
+
+Hassan Benali`,
+    response:`Bonjour Monsieur Benali,
+
+Nous pouvons vous accompagner dans la rédaction de votre convention d'actionnaires.
+
+CLAUSES STANDARD INCLUSES
+• Droit de premier refus
+• Clause shotgun
+• Rachat en cas de décès ou d'invalidité
+• Restrictions de transfert d'actions
+• Non-concurrence et confidentialité
+
+Délais : 10 à 15 jours ouvrables
+Honoraires : 1 800 $ à 3 500 $ selon la complexité
+
+POUR DÉMARRER
+• Certificat de constitution de la société
+• Registre des actionnaires
+• Vos objectifs pour chaque clause
+
+Je vous propose une consultation préliminaire gratuite (30 min). Êtes-vous disponible la semaine prochaine?
+
+Cordialement,
+Bureau Notarial Tremblay`
+  },
+  {
+    id:7, from:"Thomas Desrochers", email:"t.desrochers@desjardins.com",
+    subject:"Demande de mainlevée hypothécaire",
+    time:"Hier, 16h30", tag:"Immobilier", tagColor:"#1d4ed8", tagBg:"#eff6ff", tagBorder:"#dbeafe",
+    unread:false, priority:"normal",
+    body:`Bonjour,
+
+Suite au remboursement intégral de Mme Nathalie Côté-Simard sur le 12, chemin des Pins à Brossard, veuillez procéder à la radiation de l'hypothèque (inscription 22 184 672).
+
+Thomas Desrochers — Caisse Desjardins de Brossard`,
+    response:`Bonjour Monsieur Desrochers,
+
+Nous accusons réception de votre demande de radiation pour l'inscription n° 22 184 672.
+
+DOCUMENTS REQUIS DE DESJARDINS
+• Quittance hypothécaire signée
+• Déclaration solennelle de remboursement intégral
+• Autorisation de Mme Côté-Simard
+
+Délai : 3 à 5 jours ouvrables après réception
+Honoraires : 375 $ + taxes
+
+Veuillez transmettre les documents à : documents@bureautremblay.qc.ca
+
+Cordialement,
+Bureau Notarial Tremblay`
+  },
+  {
+    id:8, from:"Andrée Paquin", email:"andree.paquin@outlook.com",
+    subject:"Donation maison à ma fille — est-ce possible?",
+    time:"Hier, 10h15", tag:"Contrat", tagColor:"#c2410c", tagBg:"#fff7ed", tagBorder:"#fed7aa",
+    unread:false, priority:"normal",
+    body:`Bonjour Maître,
+
+J'ai 72 ans et veux donner ma maison de Laval (480 000 $) à ma fille Caroline, de mon vivant, pour éviter des complications à ma succession. Y a-t-il des implications fiscales? Des problèmes si je dois aller en CHSLD?
+
+Andrée Paquin`,
+    response:`Bonjour Madame Paquin,
+
+La donation entre vifs d'un immeuble est possible au Québec. Voici les points essentiels à considérer :
+
+AVANTAGES
+✓ Simplification de votre succession
+✓ Transfert immédiat du titre de propriété
+✓ Possibilité de conserver un droit d'usufruit
+
+POINTS DE VIGILANCE
+⚠ Fiscal : peut entraîner un gain en capital imposable
+⚠ CHSLD : la donation pourrait être contestée dans les 3 à 5 ans
+⚠ Irrévocabilité : une donation notariée est généralement définitive
+
+Notre recommandation : une consultation approfondie s'impose avant toute décision.
+
+Je vous propose un rendez-vous la semaine du 5 mai.
+
+Cordialement,
+Bureau Notarial Tremblay`
+  },
+  {
+    id:9, from:"Claude Gervais", email:"c.gervais1952@gmail.com",
+    subject:"Mise en demeure syndicat — mon balcon",
+    time:"Il y a 2 jours", tag:"Immobilier", tagColor:"#1d4ed8", tagBg:"#eff6ff", tagBorder:"#dbeafe",
+    unread:false, priority:"normal",
+    body:`Bonjour Maître Tremblay,
+
+Vous avez instrumenté mon achat au 550, avenue Papineau, unité 804, Montréal en juin 2024. J'ai reçu une mise en demeure du syndicat pour des travaux non autorisés sur mon balcon.
+
+Puis-je avoir une copie de mon acte?
+
+Claude Gervais
+514-555-0774`,
+    response:`Bonjour Monsieur Gervais,
+
+Nous avons retrouvé votre dossier (acte du 18 juin 2024). Nous vous ferons parvenir une copie certifiée dans les 24 heures (frais : 75 $).
+
+CONCERNANT LA MISE EN DEMEURE
+En copropriété divise, tout travail sur les parties communes — dont les balcons — requiert l'approbation préalable du syndicat (art. 1097 C.c.Q.).
+
+RECOMMANDATIONS
+1. Ne pas ignorer la mise en demeure
+2. Demander au syndicat la clause précise violée
+3. Consulter un avocat en droit de la copropriété si la situation escalade
+
+Nous pouvons vous référer à des collègues spécialisés.
+
+Cordialement,
+Bureau Notarial Tremblay`
+  },
+  {
+    id:10, from:"Josée Morin-Beauchamp", email:"josee.morin@ulaval.ca",
+    subject:"Premier testament — départ à l'étranger",
+    time:"Il y a 2 jours", tag:"Testament", tagColor:"#7e22ce", tagBg:"#faf5ff", tagBorder:"#e9d5ff",
+    unread:false, priority:"low",
+    body:`Bonjour,
+
+Je suis étudiante de 24 ans à l'Université Laval et je pars en stage à Berlin pour 18 mois. Je veux faire un premier testament simple avant de partir. J'ai un REER étudiant (8 000 $) et une voiture. Je veux tout laisser à ma mère.
+
+Je pars le 20 mai.
+
+Josée Morin-Beauchamp`,
+    response:`Bonjour Madame Morin-Beauchamp,
+
+Excellente initiative de planifier votre testament avant votre départ à Berlin!
+
+DISPONIBILITÉS AVANT LE 20 MAI
+• Lundi 12 mai, 10h00
+• Mardi 13 mai, 14h30
+• Vendredi 16 mai, 9h00
+
+Durée : environ 45 minutes
+Honoraires : 295 $ (testament notarié simple, taxes incluses)
+
+DOCUMENTS À APPORTER
+• Pièce d'identité
+• Nom complet, adresse et date de naissance de votre mère
+• Numéro du compte REER
+
+Note : pour le REER, une désignation directe auprès de l'institution financière est souvent plus efficace fiscalement.
+
+Confirmez votre préférence au 514 555-0100.
+
+Cordialement,
+Bureau Notarial Tremblay`
+  }
+];
+
+const BARS = [{day:"Lun",v:18},{day:"Mar",v:22},{day:"Mer",v:15},{day:"Jeu",v:28},{day:"Ven",v:24}];
+const ACTIVITY = [
+  {text:"Réponse envoyée — M.-C. Tremblay", time:"8 min", ok:true},
+  {text:"Réponse rédigée — R. Lavoie", time:"42 min", ok:false},
+  {text:"Nouveau courriel — Agence Dufresne", time:"1h", ok:false},
+  {text:"Réponse envoyée — L. Bergeron-Côté", time:"2h", ok:true},
+  {text:"Réponse envoyée — H. Benali", time:"4h", ok:true},
+];
+
+let selectedId = 1;
+let aiTimers = {};
+
+function initials(name) {
+  return name.split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase();
+}
+
+function priorityColor(p) {
+  return p==='high'?'#f87171':p==='normal'?'#fbbf24':'#cbd5e1';
+}
+
+// ── EMAIL LIST ──
+function renderEmailList() {
+  const el = document.getElementById('email-list');
+  el.innerHTML = EMAILS.map((e,i) => `
+    <div class="email-row ${e.id===selectedId?'selected':''}" id="row-${e.id}"
+         onclick="selectEmail(${e.id})"
+         style="padding:.875rem 1rem;animation:slideIn .3s ease forwards;animation-delay:${i*0.04}s;opacity:0">
+      <div style="display:flex;align-items:flex-start;gap:.75rem">
+        <div style="position:relative;flex-shrink:0">
+          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#1B3A5C,#2E75B6);display:flex;align-items:center;justify-content:center;color:white;font-size:.65rem;font-weight:700">
+            ${initials(e.from)}
+          </div>
+          ${e.unread?`<span style="position:absolute;top:-2px;right:-2px;width:10px;height:10px;border-radius:50%;background:#2E75B6;border:2px solid white"></span>`:''}
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:.25rem;margin-bottom:.2rem">
+            <span style="font-size:.8rem;${e.unread?'font-weight:700;color:#1B3A5C':'font-weight:500;color:#475569'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px">${e.from}</span>
+            <span style="font-size:.65rem;color:#94a3b8;flex-shrink:0">${e.time}</span>
+          </div>
+          <div style="font-size:.75rem;${e.unread?'font-weight:600;color:#334155':'color:#64748b'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:.4rem">${e.subject}</div>
+          <div style="display:flex;align-items:center;gap:.375rem">
+            <span style="font-size:.65rem;font-weight:600;padding:.15rem .5rem;border-radius:9999px;background:${e.tagBg};color:${e.tagColor};border:1px solid ${e.tagBorder}">${e.tag}</span>
+            <span style="width:6px;height:6px;border-radius:50%;background:${priorityColor(e.priority)}"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── SELECT EMAIL ──
+function selectEmail(id) {
+  selectedId = id;
+  document.querySelectorAll('.email-row').forEach(r => r.classList.remove('selected'));
+  const row = document.getElementById('row-'+id);
+  if (row) row.classList.add('selected');
+  renderDetail(id);
+}
+
+// ── DETAIL PANEL ──
+function renderDetail(id) {
+  const e = EMAILS.find(x=>x.id===id);
+  const panel = document.getElementById('email-detail');
+
+  panel.innerHTML = `
+    <div style="padding:1rem 1.5rem;border-bottom:1px solid #f1f5f9;flex-shrink:0;background:white">
+      <h2 style="font-weight:700;color:#1B3A5C;font-size:.9rem;margin-bottom:.375rem">${e.subject}</h2>
+      <p style="font-size:.8rem;color:#64748b">
+        <span style="font-weight:600;color:#334155">${e.from}</span>
+        &lt;${e.email}&gt; · ${e.time}
+      </p>
+    </div>
+    <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column">
+      <div style="padding:1.25rem 1.5rem;border-bottom:1px solid #f1f5f9">
+        <p style="font-size:.65rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem">Message reçu</p>
+        <p style="font-size:.8rem;color:#475569;line-height:1.7;white-space:pre-line">${e.body}</p>
+      </div>
+      <div id="ai-section-${id}" style="flex:1;display:flex;flex-direction:column;background:linear-gradient(to bottom,#f8fafc,white)">
+        <!-- AI content injected here -->
+      </div>
+    </div>
+  `;
+
+  // Clear any existing timer for this email
+  if (aiTimers[id]) clearTimeout(aiTimers[id]);
+
+  // Show processing state
+  showProcessing(id);
+
+  // After 2.2s, show response
+  aiTimers[id] = setTimeout(() => showResponse(id), 2200);
+}
+
+function showProcessing(id) {
+  const section = document.getElementById('ai-section-'+id);
+  if (!section) return;
+  section.innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:1.5rem;padding:2rem;text-align:center">
+      <div style="position:relative">
+        <div style="width:64px;height:64px;border-radius:1rem;background:linear-gradient(135deg,#1B3A5C,#2E75B6);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(27,58,92,0.3)">
+          <svg class="spin-icon" width="28" height="28" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3l14 9-14 9V3z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 2a10 10 0 100 20 10 10 0 000-20z" stroke-dasharray="30 10"/></svg>
+        </div>
+        <div class="ping-ring" style="position:absolute;inset:0;border-radius:1rem;border:2px solid rgba(46,117,182,0.5)"></div>
+      </div>
+      <div>
+        <h3 style="font-size:1rem;font-weight:700;color:#1B3A5C;margin-bottom:.5rem">NotaMail traite ce courriel…</h3>
+        <p id="ai-step-${id}" style="font-size:.8rem;color:#64748b">Lecture du courriel…</p>
+      </div>
+      <div style="width:200px;height:4px;background:#e2e8f0;border-radius:9999px;overflow:hidden">
+        <div class="progress-bar" style="height:100%;background:linear-gradient(to right,#1B3A5C,#2E75B6);border-radius:9999px"></div>
+      </div>
+      <div style="display:flex;gap:.5rem">
+        <div class="dot-bounce" style="width:8px;height:8px;border-radius:50%;background:#2E75B6;animation-delay:0s"></div>
+        <div class="dot-bounce" style="width:8px;height:8px;border-radius:50%;background:#2E75B6;animation-delay:.18s"></div>
+        <div class="dot-bounce" style="width:8px;height:8px;border-radius:50%;background:#2E75B6;animation-delay:.36s"></div>
+      </div>
+    </div>
+  `;
+
+  // Cycle step text
+  const steps = ["Lecture du courriel…","Identification du type de dossier…","Extraction des informations clés…","Rédaction de la réponse…","Vérification de la conformité…"];
+  let s = 0;
+  const stepInterval = setInterval(() => {
+    const el = document.getElementById('ai-step-'+id);
+    if (!el) { clearInterval(stepInterval); return; }
+    s = (s+1) % steps.length;
+    el.textContent = steps[s];
+  }, 400);
+  setTimeout(() => clearInterval(stepInterval), 2200);
+}
+
+function showResponse(id) {
+  const e = EMAILS.find(x=>x.id===id);
+  const section = document.getElementById('ai-section-'+id);
+  if (!section) return;
+
+  section.innerHTML = `
+    <div class="fade-up" style="padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:1rem">
+      <div style="display:flex;align-items:center;gap:.625rem">
+        <div style="width:26px;height:26px;border-radius:.5rem;background:linear-gradient(135deg,#1B3A5C,#2E75B6);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="13" height="13" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3l14 9-14 9V3z"/></svg>
+        </div>
+        <span style="font-size:.7rem;font-weight:700;color:#1B3A5C;text-transform:uppercase;letter-spacing:.06em">Réponse rédigée par NotaMail</span>
+        <span style="font-size:.65rem;font-weight:700;background:#dcfce7;color:#166534;border:1px solid #bbf7d0;padding:.15rem .5rem;border-radius:9999px">Prête à envoyer</span>
+      </div>
+
+      <div style="background:white;border:1px solid #e2e8f0;border-radius:.75rem;padding:1.25rem;font-size:.8rem;color:#374151;line-height:1.8;white-space:pre-line;box-shadow:0 1px 4px rgba(0,0,0,0.05)">
+${e.response}
+      </div>
+
+      <div style="display:flex;align-items:center;gap:.625rem">
+        <button id="send-btn-${id}" class="send-btn" onclick="handleSend(${id})"
+          style="display:flex;align-items:center;gap:.5rem;background:#1B3A5C;color:white;font-size:.8rem;font-weight:700;padding:.6rem 1.25rem;border-radius:.75rem;border:none;cursor:pointer">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+          Envoyer
+        </button>
+        <button style="display:flex;align-items:center;gap:.5rem;background:white;color:#475569;font-size:.8rem;font-weight:500;padding:.6rem 1.25rem;border-radius:.75rem;border:1px solid #e2e8f0;cursor:pointer"
+          onmouseover="this.style.borderColor='#cbd5e1'" onmouseout="this.style.borderColor='#e2e8f0'">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Modifier
+        </button>
+        <button style="display:flex;align-items:center;gap:.375rem;background:transparent;color:#94a3b8;font-size:.8rem;padding:.6rem .75rem;border-radius:.75rem;border:none;cursor:pointer"
+          onmouseover="this.style.color='#64748b'" onmouseout="this.style.color='#94a3b8'">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          Ignorer
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function handleSend(id) {
+  const btn = document.getElementById('send-btn-'+id);
+  if (!btn || btn.classList.contains('sent')) return;
+  btn.classList.add('sent');
+  btn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> Envoyé !`;
+  btn.style.cursor = 'default';
+}
+
+// ── DASHBOARD ──
+function initDashboard() {
+  // Bar chart
+  const chart = document.getElementById('bar-chart');
+  const max = Math.max(...BARS.map(b=>b.v));
+  chart.innerHTML = BARS.map((b,i) => `
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:.375rem">
+      <span style="font-size:.75rem;font-weight:600;color:#64748b">${b.v}</span>
+      <div style="width:100%;border-radius:.375rem .375rem 0 0;background:linear-gradient(to top,#1B3A5C,#2E75B6);--h:${Math.round(b.v/max*80)}px;height:0;animation:growBar .5s ease forwards;animation-delay:${i*0.08}s"></div>
+      <span style="font-size:.75rem;color:#94a3b8">${b.day}</span>
+    </div>
+  `).join('');
+
+  // Activity
+  const act = document.getElementById('activity-list');
+  act.innerHTML = ACTIVITY.map((a,i) => `
+    <div class="slide-in" style="display:flex;align-items:center;gap:.75rem;animation-delay:${0.3+i*0.07}s">
+      <div style="width:6px;height:6px;border-radius:50%;background:${a.ok?'#34d399':'#2E75B6'};flex-shrink:0"></div>
+      <span style="font-size:.8rem;color:#475569;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.text}</span>
+      <span style="font-size:.7rem;color:#94a3b8;flex-shrink:0">${a.time}</span>
+    </div>
+  `).join('');
+
+  // Count-up
+  countUp('count-emails', 24, 1400);
+  countUp('count-rate', 95, 1600);
+  countUpTime();
+}
+
+function countUp(id, target, duration) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const start = performance.now();
+  function tick(now) {
+    const p = Math.min((now-start)/duration, 1);
+    const eased = 1 - Math.pow(1-p, 3);
+    el.textContent = Math.round(eased * target);
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function countUpTime() {
+  const el = document.getElementById('count-time');
+  if (!el) return;
+  const start = performance.now();
+  const duration = 1500;
+  const target = 432; // minutes
+  function tick(now) {
+    const p = Math.min((now-start)/duration, 1);
+    const eased = 1 - Math.pow(1-p, 3);
+    const mins = Math.round(eased * target);
+    const h = Math.floor(mins/60);
+    const m = mins % 60;
+    el.textContent = h > 0 ? `${h}h ${m}min` : `${m}min`;
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+// ── VIEW SWITCHING ──
+function showView(view) {
+  document.getElementById('view-dashboard').style.display = view==='dashboard' ? 'flex' : 'none';
+  document.getElementById('view-inbox').style.display     = view==='inbox'     ? 'flex' : 'none';
+
+  document.getElementById('nav-dashboard').classList.toggle('active', view==='dashboard');
+  document.getElementById('nav-inbox').classList.toggle('active', view==='inbox');
+
+  document.getElementById('nav-dashboard').style.color = view==='dashboard' ? 'white' : 'rgba(191,219,254,0.8)';
+  document.getElementById('nav-inbox').style.color     = view==='inbox'     ? 'white' : 'rgba(191,219,254,0.8)';
+
+  if (view === 'dashboard') initDashboard();
+}
+
+// ── INIT ──
+renderEmailList();
+renderDetail(1);
+</script>
+</body>
+</html>

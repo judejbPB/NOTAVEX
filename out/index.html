@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NotaMail — L'assistant IA pour notaires du Québec</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  * { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .anim { opacity:0; animation: fadeUp 0.6s ease forwards; }
+  .d1{animation-delay:.1s} .d2{animation-delay:.25s} .d3{animation-delay:.4s}
+  .d4{animation-delay:.55s} .d5{animation-delay:.7s} .d6{animation-delay:.85s}
+  .pulse { animation: pulseDot 1.5s ease infinite; }
+</style>
+</head>
+<body class="min-h-screen flex flex-col" style="background:#1B3A5C">
+
+<nav class="flex items-center justify-between px-8 py-5" style="border-bottom:1px solid rgba(255,255,255,0.1)">
+  <div class="flex items-center gap-2.5">
+    <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:linear-gradient(135deg,#60a5fa,#2E75B6)">
+      <svg class="w-4 h-4" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+    </div>
+    <span class="font-bold text-lg" style="color:white">NotaMail</span>
+  </div>
+  <a href="demo.html" style="color:#93c5fd;font-size:.875rem;font-weight:500;text-decoration:none" onmouseover="this.style.color='white'" onmouseout="this.style.color='#93c5fd'">Voir la démo →</a>
+</nav>
+
+<section class="flex-1 flex flex-col items-center justify-center text-center px-6 py-20">
+  <div class="anim d1 inline-flex items-center gap-2 rounded-full px-4 py-2 mb-8" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2)">
+    <span class="pulse w-2 h-2 rounded-full inline-block" style="background:#34d399"></span>
+    <span style="color:rgba(255,255,255,0.9);font-size:.75rem;font-weight:600">Conçu pour les notaires du Québec</span>
+  </div>
+
+  <h1 class="anim d2 font-black" style="font-size:4.5rem;color:white;line-height:1;letter-spacing:-2px;margin-bottom:1.25rem">NotaMail</h1>
+
+  <p class="anim d3 font-semibold mb-4" style="font-size:1.75rem;color:#bfdbfe">L'assistant IA qui gère vos courriels 24/7</p>
+
+  <p class="anim d4 mb-12 leading-relaxed" style="color:rgba(147,197,253,0.8);font-size:1.1rem;max-width:500px">
+    Répondez à chaque client en secondes. Automatiquement, en français, avec la précision juridique que vos dossiers exigent.
+  </p>
+
+  <a href="demo.html" class="anim d5 inline-flex items-center gap-3 font-bold rounded-2xl transition-all" style="background:white;color:#1B3A5C;font-size:1.125rem;padding:.9rem 2.25rem;text-decoration:none;box-shadow:0 20px 60px rgba(0,0,0,0.35)"
+     onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='white'">
+    Voir la démo en action
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5-5 5M6 12h12"/></svg>
+  </a>
+
+  <div class="anim d6 grid mt-16 gap-8" style="grid-template-columns:repeat(3,1fr);max-width:400px;margin-top:4rem">
+    <div class="text-center">
+      <div class="font-black" style="font-size:2.5rem;color:white">95%</div>
+      <div style="color:#93c5fd;font-size:.8rem;margin-top:.25rem">Taux d'automatisation</div>
+    </div>
+    <div class="text-center">
+      <div class="font-black" style="font-size:2.5rem;color:white">8h</div>
+      <div style="color:#93c5fd;font-size:.8rem;margin-top:.25rem">Économisées / semaine</div>
+    </div>
+    <div class="text-center">
+      <div class="font-black" style="font-size:2.5rem;color:white">&lt;3s</div>
+      <div style="color:#93c5fd;font-size:.8rem;margin-top:.25rem">Par réponse rédigée</div>
+    </div>
+  </div>
+</section>
+
+<div style="border-top:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05)">
+  <div class="mx-auto px-6 py-10 grid gap-8" style="max-width:900px;grid-template-columns:repeat(3,1fr)">
+    <div class="flex gap-4">
+      <div class="rounded-xl flex items-center justify-center flex-shrink-0 w-10 h-10" style="background:rgba(96,165,250,0.2)">
+        <svg class="w-5 h-5" fill="none" stroke="#93c5fd" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      </div>
+      <div><h3 class="font-semibold mb-1" style="color:white">Réponses instantanées</h3><p style="color:rgba(147,197,253,0.7);font-size:.875rem;line-height:1.5">L'IA rédige une réponse professionnelle en 3 secondes.</p></div>
+    </div>
+    <div class="flex gap-4">
+      <div class="rounded-xl flex items-center justify-center flex-shrink-0 w-10 h-10" style="background:rgba(96,165,250,0.2)">
+        <svg class="w-5 h-5" fill="none" stroke="#93c5fd" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+      </div>
+      <div><h3 class="font-semibold mb-1" style="color:white">Conformité juridique</h3><p style="color:rgba(147,197,253,0.7);font-size:.875rem;line-height:1.5">Respecte les normes de la Chambre des notaires du Québec.</p></div>
+    </div>
+    <div class="flex gap-4">
+      <div class="rounded-xl flex items-center justify-center flex-shrink-0 w-10 h-10" style="background:rgba(96,165,250,0.2)">
+        <svg class="w-5 h-5" fill="none" stroke="#93c5fd" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div><h3 class="font-semibold mb-1" style="color:white">Disponible 24/7</h3><p style="color:rgba(147,197,253,0.7);font-size:.875rem;line-height:1.5">Vos clients reçoivent une réponse en dehors des heures de bureau.</p></div>
+    </div>
+  </div>
+</div>
+
+<footer style="border-top:1px solid rgba(255,255,255,0.1);padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between">
+  <span style="color:#60a5fa;font-size:.75rem">© 2025 Notavex Technologies Inc. — Montréal, Québec</span>
+  <a href="demo.html" style="color:#93c5fd;font-size:.75rem;text-decoration:none" onmouseover="this.style.color='white'" onmouseout="this.style.color='#93c5fd'">Démo interactive →</a>
+</footer>
+</body>
+</html>
